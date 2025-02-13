@@ -86,7 +86,12 @@ function AdminPanel() {
   return (
     <div className="container">
       <div className="admin-panel">
-        <h2>Yeni Evrad Oluştur</h2>
+        <div className="header-actions">
+          <h2>Yeni Evrad Oluştur</h2>
+          <a href="/admin/guide" className="guide-link" target="_blank">
+            📖 Kullanım Kılavuzu
+          </a>
+        </div>
         <form onSubmit={evradOlustur}>
           <input
             type="text"

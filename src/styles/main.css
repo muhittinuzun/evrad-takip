@@ -149,3 +149,67 @@ h2 {
 .share-button:hover {
   background-color: #128C7E;
 }
+
+/* Kılavuz sayfası için stiller */
+.guide-panel {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-top: 20px;
+}
+
+.guide-section {
+  margin: 25px 0;
+  padding: 20px;
+  border-left: 4px solid var(--primary-color);
+  background: var(--background-color);
+  border-radius: 0 8px 8px 0;
+}
+
+.guide-section h3 {
+  color: var(--dark-color);
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+.guide-content {
+  padding-left: 15px;
+}
+
+.guide-content p {
+  margin: 10px 0;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.guide-content a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.guide-content a:hover {
+  text-decoration: underline;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.guide-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 16px;
+  padding: 8px 15px;
+  border: 2px solid var(--primary-color);
+  border-radius: 20px;
+  transition: all 0.3s;
+}
+
+.guide-link:hover {
+  background: var(--primary-color);
+  color: white;
+}

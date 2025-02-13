@@ -4,6 +4,7 @@ import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
 import SuperAdminPanel from './components/SuperAdminPanel';
 import EvradSayfasi from './components/EvradSayfasi';
+import AdminGuide from './components/AdminGuide';
 import './styles/main.css';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin/panel" element={<AdminPanel />} />
+        <Route path="/admin/guide" element={<AdminGuide />} />
         <Route path="/superadmin/panel" element={<SuperAdminPanel />} />
         <Route path="/evrad/:evradId" element={<EvradSayfasi />} />
         <Route path="/" element={<Navigate to="/admin" replace />} />
