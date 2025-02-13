@@ -28,15 +28,22 @@ function EvradSayfasi() {
       return;
     }
 
+    // Sayı kontrolü
+    const istenenSayi = parseInt(okumaSayisi);
+    if (istenenSayi > evrad.kalanSayi) {
+      alert(`Kalan sayı ${evrad.kalanSayi}'dir. Bu evradda ${evrad.kalanSayi}'dan daha fazla evrad alamazsınız.`);
+      return;
+    }
+
     const docRef = doc(db, "evradlar", evradId);
-    const yeniKalanSayi = evrad.kalanSayi - parseInt(okumaSayisi);
+    const yeniKalanSayi = evrad.kalanSayi - istenenSayi;
     
     try {
       await updateDoc(docRef, {
         kalanSayi: yeniKalanSayi,
         katilimcilar: arrayUnion({
           isim: isim,
-          okumaSayisi: parseInt(okumaSayisi)
+          okumaSayisi: istenenSayi
         }),
         tamamlandi: yeniKalanSayi <= 0
       });

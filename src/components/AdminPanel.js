@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import '../styles/main.css';
 
 function AdminPanel() {
@@ -55,6 +55,34 @@ function AdminPanel() {
     }
   };
 
+  // Evrad silme fonksiyonu
+  const handleDeleteEvrad = async (evradId) => {
+    if (window.confirm('Bu evradı silmek istediğinize emin misiniz?')) {
+      try {
+        await deleteDoc(doc(db, "evradlar", evradId));
+      } catch (error) {
+        alert('Hata: ' + error.message);
+      }
+    }
+  };
+
+  // Evrad paylaşım fonksiyonu
+  const handleShareEvrad = (evrad) => {
+    const isDevelopment = window.location.hostname === 'localhost';
+    const protocol = isDevelopment ? 'http' : 'https';
+    const host = isDevelopment ? 'localhost:3000' : window.location.host;
+    
+    const paylasilacakLink = `${protocol}://${host}/evrad/${evrad.id}`;
+    
+    const paylasilacakMetin = 
+      `${evrad.adi} Evradına katılmak için aşağıdaki linki tarayıcınızda açın:\n\n` +
+      `${paylasilacakLink}\n\n` +
+      `Not: Linki doğrudan WhatsApp'tan açmak yerine kopyalayıp tarayıcınıza yapıştırın.`;
+    
+    const whatsappLink = `https://wa.me/?text=${encodeURIComponent(paylasilacakMetin)}`;
+    window.open(whatsappLink, '_blank');
+  };
+
   return (
     <div className="container">
       <div className="admin-panel">
@@ -75,14 +103,24 @@ function AdminPanel() {
           <button type="submit">Oluştur ve Paylaş</button>
         </form>
 
-        <div className="evrad-list">
-          <h3>Evradlar</h3>
+        <div className="evrad-grid">
           {evradlar.map((evrad) => (
             <div key={evrad.id} className="evrad-card">
               <h4>{evrad.adi}</h4>
               <div className="evrad-info">
                 <p>Hedef: {evrad.hedefSayi}</p>
                 <p>Kalan: {evrad.kalanSayi}</p>
+              </div>
+              <div className="evrad-actions">
+                <button onClick={() => handleDeleteEvrad(evrad.id)}>Sil</button>
+                {!evrad.tamamlandi && (
+                  <button 
+                    onClick={() => handleShareEvrad(evrad)}
+                    className="share-button"
+                  >
+                    Paylaş
+                  </button>
+                )}
               </div>
               {evrad.katilimcilar.length > 0 && (
                 <div className="katilimcilar">

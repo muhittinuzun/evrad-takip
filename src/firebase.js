@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, collection, getDoc, doc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -15,3 +15,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+
+// Yeni koleksiyonlar için referanslar
+export const adminsRef = collection(db, 'admins');
+export const evradlarRef = collection(db, 'evradlar');
+
+// Süper admin kontrolü
+export const isSuperAdmin = async (uid) => {
+  const userDoc = await getDoc(doc(db, 'admins', uid));
+  return userDoc.exists() && userDoc.data().role === 'superadmin';
+};
+
+// Admin kontrolü
+export const isAdmin = async (uid) => {
+  const userDoc = await getDoc(doc(db, 'admins', uid));
+  return userDoc.exists();
+};

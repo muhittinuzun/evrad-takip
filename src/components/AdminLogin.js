@@ -1,19 +1,41 @@
 import React, { useState } from 'react';
-import { auth } from '../firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../firebase';
+import { signInWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth';
+import { doc, getDoc, getDocs, query, collection, where } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import '../styles/main.css';
 
 function AdminLogin() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/admin/panel');
+      // Önce admins koleksiyonunda kullanıcıyı ara
+      const adminQuery = await getDocs(query(collection(db, 'admins'), 
+        where('username', '==', username),
+        where('password', '==', password)
+      ));
+
+      if (!adminQuery.empty) {
+        const adminDoc = adminQuery.docs[0];
+        const adminData = adminDoc.data();
+        
+        // Süper admin kontrolü
+        if (adminData.role === 'superadmin') {
+          navigate('/superadmin/panel');
+        } else {
+          navigate('/admin/panel');
+        }
+        
+        // Admin bilgilerini localStorage'a kaydet
+        localStorage.setItem('adminId', adminDoc.id);
+        localStorage.setItem('adminRole', adminData.role);
+      } else {
+        alert('Kullanıcı adı veya şifre hatalı!');
+      }
     } catch (error) {
       alert('Giriş başarısız: ' + error.message);
     }
@@ -25,10 +47,10 @@ function AdminLogin() {
         <h2>Admin Girişi</h2>
         <form onSubmit={handleLogin}>
           <input 
-            type="email" 
-            placeholder="E-posta"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text" 
+            placeholder="Kullanıcı Adı"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <input 
             type="password" 
