@@ -44,14 +44,6 @@ function AdminGuide() {
             <p>➤ Şüpheli bir durum görürseniz süper adminle iletişime geçin</p>
           </div>
         </div>
-
-        <div className="guide-section">
-          <h3>5. İletişim</h3>
-          <div className="guide-content">
-            <p>➤ Teknik destek için: <a href="mailto:support@evradtakip.com">support@evradtakip.com</a></p>
-            <p>➤ WhatsApp destek: <a href="tel:+905555555555">+90 555 555 5555</a></p>
-          </div>
-        </div>
       </div>
     </div>
   );
