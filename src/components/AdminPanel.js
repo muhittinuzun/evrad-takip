@@ -15,6 +15,7 @@ function AdminPanel() {
   useEffect(() => {
     const adminId = localStorage.getItem('adminId');
     const adminRole = localStorage.getItem('adminRole');
+    setAdminRole(adminRole);
     
     if (!adminId) {
       navigate('/admin');
@@ -41,7 +42,7 @@ function AdminPanel() {
       // Normal admin kendi evradlarını veya olusturanId'si olmayan evradları görebilir
       evradQuery = query(
         collection(db, "evradlar"),
-        where("olusturanId", "in", [adminId, null, undefined]),
+        where("olusturanId", "in", [adminId, null]),
         orderBy("olusturulmaTarihi", "desc")
       );
     }
