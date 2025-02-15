@@ -195,7 +195,7 @@ h2 {
 .header-actions {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20px;
 }
 
@@ -212,4 +212,16 @@ h2 {
 .guide-link:hover {
   background: var(--primary-color);
   color: white;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-info {
+  color: var(--dark-color);
+  font-size: 14px;
+  opacity: 0.8;
 }

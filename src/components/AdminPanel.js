@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, where, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, where, getDocs, updateDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import '../styles/main.css';
 
@@ -10,6 +10,7 @@ function AdminPanel() {
   const [hedefSayi, setHedefSayi] = useState('');
   const [evradlar, setEvradlar] = useState([]);
   const [adminRole, setAdminRole] = useState('');
+  const [adminUsername, setAdminUsername] = useState('');
 
   useEffect(() => {
     const adminId = localStorage.getItem('adminId');
@@ -19,6 +20,15 @@ function AdminPanel() {
       navigate('/admin');
       return;
     }
+
+    // Admin bilgilerini getir
+    const getAdminInfo = async () => {
+      const adminDoc = await getDoc(doc(db, 'admins', adminId));
+      if (adminDoc.exists()) {
+        setAdminUsername(adminDoc.data().username);
+      }
+    };
+    getAdminInfo();
 
     let evradQuery;
     if (adminRole === 'superadmin') {
@@ -164,7 +174,12 @@ function AdminPanel() {
     <div className="container">
       <div className="admin-panel">
         <div className="header-actions">
-          <h2>Yeni Evrad Oluştur</h2>
+          <div className="header-left">
+            <h2>Yeni Evrad Oluştur</h2>
+            <span className="admin-info">
+              Hoş geldiniz, {adminUsername}
+            </span>
+          </div>
           <a href="/admin/guide" className="guide-link" target="_blank">
             📖 Kullanım Kılavuzu
           </a>
