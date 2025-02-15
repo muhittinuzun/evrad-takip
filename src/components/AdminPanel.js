@@ -31,26 +31,24 @@ function AdminPanel() {
     };
     getAdminInfo();
 
-    let evradQuery;
-    if (adminRole === 'superadmin') {
-      // Süper admin tüm evradları görebilir
-      evradQuery = query(
-        collection(db, "evradlar"),
-        orderBy("olusturulmaTarihi", "desc")
-      );
-    } else {
-      // Normal admin kendi evradlarını veya olusturanId'si olmayan evradları görebilir
-      evradQuery = query(
-        collection(db, "evradlar"),
-        where("olusturanId", "in", [adminId, null]),
-        orderBy("olusturulmaTarihi", "desc")
-      );
-    }
+    // Tüm evradları getir ve client-side filtreleme yap
+    const evradQuery = query(
+      collection(db, "evradlar"),
+      orderBy("olusturulmaTarihi", "desc")
+    );
 
     const unsubscribe = onSnapshot(evradQuery, (querySnapshot) => {
       const evradlarData = [];
       querySnapshot.forEach((doc) => {
-        evradlarData.push({ id: doc.id, ...doc.data() });
+        const evradData = { id: doc.id, ...doc.data() };
+        
+        // Süper admin tüm evradları görebilir
+        // Normal admin sadece kendi evradlarını ve olusturanId'si olmayanları görebilir
+        if (adminRole === 'superadmin' || 
+            !evradData.olusturanId || 
+            evradData.olusturanId === adminId) {
+          evradlarData.push(evradData);
+        }
       });
       setEvradlar(evradlarData);
     });
