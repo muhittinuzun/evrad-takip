@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, where } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, where, getDocs, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import '../styles/main.css';
 
@@ -9,9 +9,9 @@ function AdminPanel() {
   const [evradAdi, setEvradAdi] = useState('');
   const [hedefSayi, setHedefSayi] = useState('');
   const [evradlar, setEvradlar] = useState([]);
+  const [adminRole, setAdminRole] = useState('');
 
   useEffect(() => {
-    // LocalStorage'dan admin ID'sini al
     const adminId = localStorage.getItem('adminId');
     const adminRole = localStorage.getItem('adminRole');
     
@@ -20,7 +20,6 @@ function AdminPanel() {
       return;
     }
 
-    // Sorguyu oluştur
     let evradQuery;
     if (adminRole === 'superadmin') {
       // Süper admin tüm evradları görebilir
@@ -29,15 +28,14 @@ function AdminPanel() {
         orderBy("olusturulmaTarihi", "desc")
       );
     } else {
-      // Normal admin sadece kendi evradlarını görebilir
+      // Normal admin kendi evradlarını veya olusturanId'si olmayan evradları görebilir
       evradQuery = query(
         collection(db, "evradlar"),
-        where("olusturanId", "==", adminId),
+        where("olusturanId", "in", [adminId, null, undefined]),
         orderBy("olusturulmaTarihi", "desc")
       );
     }
 
-    // Verileri dinle
     const unsubscribe = onSnapshot(evradQuery, (querySnapshot) => {
       const evradlarData = [];
       querySnapshot.forEach((doc) => {
@@ -136,6 +134,32 @@ function AdminPanel() {
     window.open(whatsappLink, '_blank');
   };
 
+  // Eski evradları güncelleme fonksiyonu
+  const updateOldEvradlar = async () => {
+    const adminId = localStorage.getItem('adminId');
+    
+    try {
+      // olusturanId'si olmayan evradları bul
+      const oldEvradQuery = query(
+        collection(db, "evradlar"),
+        where("olusturanId", "==", null)
+      );
+      
+      const querySnapshot = await getDocs(oldEvradQuery);
+      
+      // Her bir evradı güncelle
+      querySnapshot.forEach(async (doc) => {
+        await updateDoc(doc.ref, {
+          olusturanId: adminId
+        });
+      });
+      
+      alert('Eski evradlar güncellendi!');
+    } catch (error) {
+      console.error('Güncelleme hatası:', error);
+    }
+  };
+
   return (
     <div className="container">
       <div className="admin-panel">
@@ -160,6 +184,12 @@ function AdminPanel() {
           />
           <button type="submit">Oluştur ve Paylaş</button>
         </form>
+
+        {adminRole === 'superadmin' && (
+          <button onClick={updateOldEvradlar} className="update-button">
+            Eski Evradları Güncelle
+          </button>
+        )}
 
         <div className="evrad-grid">
           {evradlar.map((evrad) => (
