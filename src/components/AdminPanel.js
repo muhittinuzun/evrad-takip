@@ -1,35 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, where } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 import '../styles/main.css';
 
 function AdminPanel() {
+  const navigate = useNavigate();
   const [evradAdi, setEvradAdi] = useState('');
   const [hedefSayi, setHedefSayi] = useState('');
   const [evradlar, setEvradlar] = useState([]);
 
   useEffect(() => {
-    const q = query(collection(db, "evradlar"), orderBy("olusturulmaTarihi", "desc"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    // LocalStorage'dan admin ID'sini al
+    const adminId = localStorage.getItem('adminId');
+    const adminRole = localStorage.getItem('adminRole');
+    
+    if (!adminId) {
+      navigate('/admin');
+      return;
+    }
+
+    // Sorguyu oluştur
+    let evradQuery;
+    if (adminRole === 'superadmin') {
+      // Süper admin tüm evradları görebilir
+      evradQuery = query(
+        collection(db, "evradlar"),
+        orderBy("olusturulmaTarihi", "desc")
+      );
+    } else {
+      // Normal admin sadece kendi evradlarını görebilir
+      evradQuery = query(
+        collection(db, "evradlar"),
+        where("olusturanId", "==", adminId),
+        orderBy("olusturulmaTarihi", "desc")
+      );
+    }
+
+    // Verileri dinle
+    const unsubscribe = onSnapshot(evradQuery, (querySnapshot) => {
       const evradlarData = [];
       querySnapshot.forEach((doc) => {
         evradlarData.push({ id: doc.id, ...doc.data() });
       });
       setEvradlar(evradlarData);
     });
+
     return () => unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const evradOlustur = async (e) => {
     e.preventDefault();
     try {
+      const adminId = localStorage.getItem('adminId');
+      
       const docRef = await addDoc(collection(db, "evradlar"), {
         adi: evradAdi,
         hedefSayi: parseInt(hedefSayi),
         kalanSayi: parseInt(hedefSayi),
         tamamlandi: false,
         olusturulmaTarihi: new Date(),
-        katilimcilar: []
+        katilimcilar: [],
+        olusturanId: adminId  // Oluşturan admin'in ID'sini kaydet
       });
       
       // Development ve production için farklı URL'ler
@@ -57,6 +89,18 @@ function AdminPanel() {
 
   // Evrad silme fonksiyonu
   const handleDeleteEvrad = async (evradId) => {
+    const adminId = localStorage.getItem('adminId');
+    const adminRole = localStorage.getItem('adminRole');
+    
+    // Evradı bul
+    const evrad = evradlar.find(e => e.id === evradId);
+    
+    // Yetki kontrolü
+    if (evrad.olusturanId !== adminId && adminRole !== 'superadmin') {
+      alert('Bu evradı silme yetkiniz yok!');
+      return;
+    }
+
     if (window.confirm('Bu evradı silmek istediğinize emin misiniz?')) {
       try {
         await deleteDoc(doc(db, "evradlar", evradId));
@@ -67,7 +111,16 @@ function AdminPanel() {
   };
 
   // Evrad paylaşım fonksiyonu
-  const handleShareEvrad = (evrad) => {
+  const handleShareEvrad = async (evrad) => {
+    const adminId = localStorage.getItem('adminId');
+    const adminRole = localStorage.getItem('adminRole');
+    
+    // Yetki kontrolü
+    if (evrad.olusturanId !== adminId && adminRole !== 'superadmin') {
+      alert('Bu evradı paylaşma yetkiniz yok!');
+      return;
+    }
+
     const isDevelopment = window.location.hostname === 'localhost';
     const protocol = isDevelopment ? 'http' : 'https';
     const host = isDevelopment ? 'localhost:3000' : window.location.host;
